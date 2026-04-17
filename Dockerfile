@@ -30,8 +30,8 @@ COPY src/ ./src/
 COPY frontend/ ./frontend/
 COPY models/ ./models/
 
-# Railway assigns a dynamic PORT — default to 8000 if not set
-ENV PORT=8000
+# HF Spaces uses port 7860, Railway uses PORT env var
+ENV PORT=7860
 
-# Start the server using Railway's dynamic PORT
+# Start the server
 CMD python -m uvicorn src.main:app --host 0.0.0.0 --port $PORT

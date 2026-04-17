@@ -1,3 +1,12 @@
+---
+title: Aman - أمان
+emoji: 🚗
+colorFrom: blue
+colorTo: green
+sdk: docker
+app_port: 7860
+---
+
 # أمان | Aman
 ## Egyptian License Plate Recognition & Community Safety Platform
 
