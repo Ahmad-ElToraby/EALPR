@@ -27,12 +27,9 @@ COPY src/ ./src/
 COPY frontend/ ./frontend/
 COPY models/ ./models/
 
-# Expose the port Railway/Render will route to
-EXPOSE 8000
+# Railway assigns a dynamic PORT — default to 8000 if not set
+ENV PORT=8000
 
-# Health check — give models 60s to warm up before first check
-HEALTHCHECK --interval=60s --timeout=15s --start-period=60s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"
-
-# Start the server (no --tunnel needed in cloud!)
-CMD ["python", "-m", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# No Docker healthcheck — let Railway handle it via railway.toml
+# Start the server using Railway's dynamic PORT
+CMD python -m uvicorn src.main:app --host 0.0.0.0 --port $PORT
