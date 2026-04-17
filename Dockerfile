@@ -30,8 +30,8 @@ COPY models/ ./models/
 # Expose the port Railway/Render will route to
 EXPOSE 8000
 
-# Health check for Railway
-HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
+# Health check — give models 60s to warm up before first check
+HEALTHCHECK --interval=60s --timeout=15s --start-period=60s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"
 
 # Start the server (no --tunnel needed in cloud!)

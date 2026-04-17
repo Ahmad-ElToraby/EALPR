@@ -30,6 +30,13 @@ from src.database import (
 app = FastAPI(title="Aman | أمان", description="Egyptian License Plate Recognition & Community Safety Platform", version="1.0.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
+@app.on_event("startup")
+async def startup_event():
+    """Initialize database tables on server boot."""
+    from src.database import init_db
+    init_db()
+    print("Database initialized.")
+
 FRONTEND_DIR = PROJECT_ROOT / "frontend"
 
 class FrameRequest(BaseModel):
