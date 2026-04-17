@@ -184,9 +184,66 @@
         <!-- TAB 3: LOOKUP -->
         <section id="tab-lookup" class="tab-content">
             <h2 class="section-title"><span class="text-en">Lookup Plate</span><span class="text-ar" style="display:none">بحث عن لوحة</span></h2>
-            <div class="search-box">
-                <input type="text" id="lookup-input" placeholder="e.g. 1234-NMS" dir="ltr">
-                <button id="btn-lookup" class="btn-primary"><span class="text-en">Search</span><span class="text-ar" style="display:none">بحث</span></button>
+            <div class="search-box" style="flex-direction: column; align-items: center;">
+                <div style="
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 8px;
+                    direction: ltr;
+                    margin-bottom: 12px;
+                ">
+                    <input id="lookup-digits" maxlength="4" style="
+                      width: 110px;
+                      height: 52px;
+                      border-radius: 26px;
+                      border: 2px solid #2196F3;
+                      background: #161B22;
+                      color: white;
+                      text-align: center;
+                      font-size: 22px;
+                      font-weight: bold;
+                      letter-spacing: 4px;
+                      outline: none;
+                    " placeholder="١٢٣٤" />
+                    
+                    <span style="color: #888; font-size: 28px; font-weight: bold;">-</span>
+                    
+                    <input id="lookup-l1" maxlength="1" style="
+                      width: 52px; height: 52px;
+                      border-radius: 26px;
+                      border: 2px solid #2196F3;
+                      background: #161B22;
+                      color: white;
+                      text-align: center;
+                      font-size: 22px;
+                      font-weight: bold;
+                      outline: none;
+                    " placeholder="أ" />
+                    <input id="lookup-l2" maxlength="1" style="
+                      width: 52px; height: 52px;
+                      border-radius: 26px;
+                      border: 2px solid #2196F3;
+                      background: #161B22;
+                      color: white;
+                      text-align: center;
+                      font-size: 22px;
+                      font-weight: bold;
+                      outline: none;
+                    " placeholder="أ" />
+                    <input id="lookup-l3" maxlength="1" style="
+                      width: 52px; height: 52px;
+                      border-radius: 26px;
+                      border: 2px solid #2196F3;
+                      background: #161B22;
+                      color: white;
+                      text-align: center;
+                      font-size: 22px;
+                      font-weight: bold;
+                      outline: none;
+                    " placeholder="أ" />
+                </div>
+                <button id="btn-lookup" class="btn-primary" style="width: 100%;"><span class="text-en">Search</span><span class="text-ar" style="display:none">بحث</span></button>
             </div>
             
             <div id="lookup-loading" class="spinner" style="display:none"><span class="text-en">Searching...</span><span class="text-ar" style="display:none">جاري البحث...</span></div>

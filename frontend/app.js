@@ -465,8 +465,53 @@ const timeAgo = (iso) => {
     return Math.floor(diff/86400) + " days ago";
 };
 
+// Setup Lookup Bubble Inputs
+const lkDigits = document.getElementById('lookup-digits');
+const lkL1 = document.getElementById('lookup-l1');
+const lkL2 = document.getElementById('lookup-l2');
+const lkL3 = document.getElementById('lookup-l3');
+
+lkDigits.addEventListener('input', function() {
+    let newVal = '';
+    for (let char of this.value) {
+        if (ARABIC_DIGIT_MAP[char]) newVal += ARABIC_DIGIT_MAP[char];
+        else if (/[1-9]/.test(char)) newVal += char;
+    }
+    this.value = newVal;
+    if (this.value.length === 4) lkL1.focus();
+});
+
+function handleLookupLetterInput(el, nextEl, prevEl) {
+    el.addEventListener('input', function() {
+        let val = this.value;
+        if (!val) return;
+        let mapped = ARABIC_LETTER_MAP[val] || val.toUpperCase();
+        if (!validLetters.includes(mapped)) {
+            this.value = '';
+        } else {
+            this.value = mapped;
+            if(nextEl && this.value) nextEl.focus();
+        }
+    });
+    el.addEventListener('keydown', function(e) {
+        if(e.key === 'Backspace' && !this.value && prevEl) {
+            prevEl.focus();
+            e.preventDefault();
+        }
+    });
+}
+handleLookupLetterInput(lkL1, lkL2, lkDigits);
+handleLookupLetterInput(lkL2, lkL3, lkL1);
+handleLookupLetterInput(lkL3, null, lkL2);
+
+function getLookupPlateText() {
+    const d = lkDigits.value;
+    const l = lkL1.value + lkL2.value + lkL3.value;
+    return (d && l) ? (d + '-' + l) : (d || l);
+}
+
 document.getElementById('btn-lookup').onclick = async () => {
-    const plate = document.getElementById('lookup-input').value.trim();
+    const plate = getLookupPlateText();
     if(!plate) return;
     
     const spin = document.getElementById('lookup-loading');
