@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ar" dir="auto">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>أمان | Aman</title>
+    <link rel="manifest" href="/frontend/manifest.json">
+    <meta name="theme-color" content="#0D1117">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/frontend/index.css">
+</head>
+<body>
+    <div id="lang-overlay" style="
+      position: fixed; inset: 0; background: #0D1117; 
+      display: flex; flex-direction: column; 
+      align-items: center; justify-content: center;
+      z-index: 9999;
+    ">
+      <div style="font-size: 48px; margin-bottom: 24px;"><span class="text-en">Aman</span><span class="text-ar" style="display:none">أمان</span></div>
+      <div style="font-size: 18px; color: #888; margin-bottom: 40px;">
+        <span class="text-en">Choose your language</span><span class="text-ar" style="display:none">اختر لغتك</span>
+      </div>
+      <button id="lang-ar" style="
+        width: 240px; padding: 16px; margin: 8px;
+        background: #2196F3; color: white; 
+        border: none; border-radius: 12px; 
+        font-size: 20px; cursor: pointer;
+      ">العربية</button>
+      <button id="lang-en" style="
+        width: 240px; padding: 16px; margin: 8px;
+        background: #161B22; color: white;
+        border: 1px solid #2196F3; border-radius: 12px;
+        font-size: 20px; cursor: pointer;
+      ">English</button>
+    </div>
+
+    <div id="app-wrapper" style="box-shadow: 0 0 40px rgba(0,0,0,0.5);">
+        <header id="app-header">
+        <div class="header-content" style="display:flex; align-items:center;">
+            <button id="btn-lang-toggle" style="background:transparent; border:1px solid rgba(255,255,255,0.3); color:#fff; border-radius:8px; padding:6px 12px; font-weight:600; cursor:pointer;" title="Change Language"></button>
+            <div class="logo-text" style="flex:1; text-align:center;">
+                <h1 style="margin:0;"><span class="text-en">Aman</span><span class="text-ar" style="display:none">أمان</span></h1>
+            </div>
+            <button id="btn-install" class="btn-control" style="display:none; padding:6px 12px;"><span class="text-en">Install</span><span class="text-ar" style="display:none">تثبيت</span></button>
+        </div>
+    </header>
+
+    <main id="app-main">
+        <!-- TAB 1: SCAN -->
+        <section id="tab-scan" class="tab-content active">
+            <div class="camera-container">
+                <div class="camera-viewport">
+                    <video id="camera-video" autoplay playsinline muted></video>
+                    <canvas id="camera-canvas"></canvas>
+                    <div class="camera-placeholder" id="camera-placeholder">
+                        <p><span class="text-en">Tap to start</span><span class="text-ar" style="display:none">اضغط للتشغيل</span></p>
+                    </div>
+                </div>
+                <div class="camera-controls">
+                    <button id="btn-upload" class="btn-control"><span class="text-en">Upload Image</span><span class="text-ar" style="display:none">رفع صورة</span></button>
+                    <button id="btn-camera" class="btn-capture"><span class="text-en">Start</span><span class="text-ar" style="display:none">تشغيل</span></button>
+                    <button id="btn-capture-photo" class="btn-control" disabled><span class="text-en">Capture</span><span class="text-ar" style="display:none">التقاط</span></button>
+                </div>
+                <input type="file" id="file-input" accept="image/*" style="display:none">
+            </div>
+
+            <div class="results-container">
+                <div class="no-results" id="no-results"></div>
+                <div class="results-cards" id="results-cards" style="display:none"></div>
+                <div class="detection-image-container" id="detection-image-container" style="display:none">
+                    <img id="detection-image" alt="Detected plates">
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: REPORT -->
+        <section id="tab-report" class="tab-content">
+            <h2 class="section-title"><span class="text-en">File Report</span><span class="text-ar" style="display:none">تقديم بلاغ</span></h2>
+            <form id="report-form" class="card-form">
+                <div class="form-group">
+                    <label><span class="text-en">Plate Text</span><span class="text-ar" style="display:none">رقم اللوحة</span></label>
+                    <div id="plate-input-container" style="margin: 16px 0;">
+                      <div style="
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 8px;
+                        direction: ltr;
+                      ">
+                        <input id="plate-digits" maxlength="4" style="
+                          width: 110px;
+                          height: 52px;
+                          border-radius: 26px;
+                          border: 2px solid #2196F3;
+                          background: #161B22;
+                          color: white;
+                          text-align: center;
+                          font-size: 22px;
+                          font-weight: bold;
+                          letter-spacing: 4px;
+                          outline: none;
+                        " placeholder="١٢٣٤" />
+                        
+                        <span style="color: #888; font-size: 28px; font-weight: bold;">-</span>
+                        
+                        <input id="plate-l1" maxlength="1" style="
+                          width: 52px; height: 52px;
+                          border-radius: 26px;
+                          border: 2px solid #2196F3;
+                          background: #161B22;
+                          color: white;
+                          text-align: center;
+                          font-size: 22px;
+                          font-weight: bold;
+                          outline: none;
+                        " placeholder="أ" />
+                        <input id="plate-l2" maxlength="1" style="
+                          width: 52px; height: 52px;
+                          border-radius: 26px;
+                          border: 2px solid #2196F3;
+                          background: #161B22;
+                          color: white;
+                          text-align: center;
+                          font-size: 22px;
+                          font-weight: bold;
+                          outline: none;
+                        " placeholder="أ" />
+                        <input id="plate-l3" maxlength="1" style="
+                          width: 52px; height: 52px;
+                          border-radius: 26px;
+                          border: 2px solid #2196F3;
+                          background: #161B22;
+                          color: white;
+                          text-align: center;
+                          font-size: 22px;
+                          font-weight: bold;
+                          outline: none;
+                        " placeholder="أ" />
+                      </div>
+                      
+                      <div style="font-size: 12px; color: #888; text-align: center; margin-top: 8px;">
+                        <span class="text-ar">أدخل الحروف والأرقام كما تظهر على اللوحة</span>
+                        <span class="text-en">Enter plate characters as shown on the plate</span>
+                      </div>
+                      
+                      <div id="plate-gov-display" style="
+                        text-align: center;
+                        margin-top: 10px;
+                        font-size: 14px;
+                        color: #2196F3;
+                        min-height: 20px;
+                      "></div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label><span class="text-en">Severity</span><span class="text-ar" style="display:none">مستوى الخطورة</span></label>
+                    <div class="readonly-banner">
+                        <p style="margin: 0; font-size: 0.9em; opacity: 0.8; text-align: center;"><span class="text-en">Severity is automatically calculated based on community reports</span><span class="text-ar" style="display:none">تُحدَّد درجة الخطورة تلقائياً بناءً على عدد البلاغات</span></p>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label><span class="text-en">Category</span><span class="text-ar" style="display:none">الفئة</span></label>
+                    <select id="report-category" required>
+                        <!-- Populated by JS -->
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label><span class="text-en">Description (Optional)</span><span class="text-ar" style="display:none">تفاصيل (اختياري)</span></label>
+                    <textarea id="report-desc" maxlength="500" rows="3"></textarea>
+                    <div class="char-counter"><span id="desc-count">0</span>/500</div>
+                </div>
+
+                <div id="report-msg" class="msg-banner" style="display:none"></div>
+                
+                <button type="submit" class="btn-primary" id="btn-submit-report"><span class="text-en">Submit Report</span><span class="text-ar" style="display:none">إرسال البلاغ</span></button>
+            </form>
+        </section>
+
+        <!-- TAB 3: LOOKUP -->
+        <section id="tab-lookup" class="tab-content">
+            <h2 class="section-title"><span class="text-en">Lookup Plate</span><span class="text-ar" style="display:none">بحث عن لوحة</span></h2>
+            <div class="search-box">
+                <input type="text" id="lookup-input" placeholder="e.g. 1234-NMS" dir="ltr">
+                <button id="btn-lookup" class="btn-primary"><span class="text-en">Search</span><span class="text-ar" style="display:none">بحث</span></button>
+            </div>
+            
+            <div id="lookup-loading" class="spinner" style="display:none"><span class="text-en">Searching...</span><span class="text-ar" style="display:none">جاري البحث...</span></div>
+            <div id="lookup-msg" class="msg-banner" style="display:none"></div>
+            <div id="lookup-results" class="reports-list"></div>
+        </section>
+
+        <!-- TAB 4: HOTSPOTS -->
+        <section id="tab-hotspots" class="tab-content">
+            <div class="hotspots-header">
+                <h2 class="section-title"><span class="text-en">Danger Hotspots</span><span class="text-ar" style="display:none">اللوحات الخطرة</span></h2>
+                <button id="btn-refresh-hotspots" class="btn-icon">↻</button>
+            </div>
+            
+            <div id="hotspots-loading" class="spinner" style="display:none"><span class="text-en">Loading...</span><span class="text-ar" style="display:none">جاري التحميل...</span></div>
+            <div id="hotspots-msg" class="msg-banner" style="display:none"></div>
+            <div id="hotspots-list" class="reports-list"></div>
+        </section>
+    </main>
+
+    <nav class="bottom-tab-bar">
+        <button class="tab-btn active" data-tab="tab-scan">
+            <span class="tab-icon">📷</span>
+            <span class="tab-label"><span class="text-en">Scan</span><span class="text-ar" style="display:none">مسح</span></span>
+        </button>
+        <button class="tab-btn" data-tab="tab-report">
+            <span class="tab-icon">📝</span>
+            <span class="tab-label"><span class="text-en">Report</span><span class="text-ar" style="display:none">بلاغ</span></span>
+        </button>
+        <button class="tab-btn" data-tab="tab-lookup">
+            <span class="tab-icon">🔍</span>
+            <span class="tab-label"><span class="text-en">Lookup</span><span class="text-ar" style="display:none">بحث</span></span>
+        </button>
+        <button class="tab-btn" data-tab="tab-hotspots">
+            <span class="tab-icon">🗺️</span>
+            <span class="tab-label"><span class="text-en">Hotspots</span><span class="text-ar" style="display:none">خريطة</span></span>
+        </button>
+    </nav>
+    </div>
+
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js');
+        });
+      }
+    </script>
+    <script src="/frontend/app.js"></script>
+</body>
+</html>

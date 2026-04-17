@@ -1,0 +1,149 @@
+:root {
+    --bg: #0D1117; 
+    --card-bg: #161B22; 
+    --accent: #2196F3;
+    --text: #f1f5f9; 
+    --glass: rgba(255,255,255,0.05);
+    padding-bottom: 70px; /* space for tab bar */
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    margin: 0;
+    padding: 0;
+    background: #080C10;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    font-family: 'Cairo', 'Inter', sans-serif;
+    color: var(--text);
+    direction: auto;
+}
+header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #0D1117;
+    width: 100%;
+    box-sizing: border-box;
+    border-bottom: 1px solid var(--glass); 
+    padding: 15px 20px;
+}
+.header-content { display: flex; justify-content: space-between; align-items: center; }
+.logo-text h1 { color: var(--accent); font-size: 1.5rem; }
+
+#app-wrapper {
+    width: 100%;
+    max-width: 480px;
+    min-height: 100vh;
+    background: #0D1117;
+    position: relative;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+#app-main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+/* Tab Visibility */
+.tab-content { display: none; }
+.tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Bottom Tab Bar */
+.bottom-tab-bar {
+    position: sticky;
+    bottom: 0;
+    width: 100%;
+    background: #161B22;
+    z-index: 100;
+    display: flex; 
+    justify-content: space-around; 
+    padding: 10px 0; 
+    border-top: 1px solid var(--glass);
+}
+.tab-btn {
+    background: none; border: none; color: #888;
+    display: flex; flex-direction: column; align-items: center;
+    font-family: inherit; cursor: pointer; flex: 1;
+}
+.tab-btn.active { color: var(--accent); }
+.tab-icon { font-size: 1.2rem; margin-bottom: 4px; }
+.tab-label { font-size: 0.75rem; text-align: center; }
+
+/* Section styling */
+.section-title { font-size: 1.3rem; margin-bottom: 15px; border-bottom: 1px solid var(--glass); padding-bottom: 8px; }
+
+/* Camera / Scan */
+.camera-viewport {
+    width: 100%; height: auto; background: #000;
+    position: relative; border-radius: 12px; overflow: hidden;
+    border: 1px solid var(--glass); display: flex; align-items: center; justify-content: center;
+    min-height: 250px;
+}
+#camera-video { width: 100%; max-width: 100%; max-height: 50vh; object-fit: contain; }
+#camera-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.camera-controls { display: flex; justify-content: center; gap: 15px; margin-top: 15px; }
+
+/* Buttons */
+.btn-control, .btn-capture, .btn-primary {
+    background: var(--glass); color: #fff; border: 1px solid var(--glass);
+    padding: 10px 20px; border-radius: 8px; cursor: pointer; font-family: inherit; font-size: 1rem;
+}
+.btn-capture { background: var(--accent); color: #fff; font-weight: bold; }
+.btn-control:disabled { opacity: 0.5; }
+.btn-primary { background: var(--accent); color: #fff; width: 100%; font-weight: bold; }
+.btn-icon { background: none; border: none; color: var(--accent); font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; }
+
+/* Forms */
+.form-group { margin-bottom: 15px; display: flex; flex-direction: column; }
+.form-group label { margin-bottom: 5px; font-weight: 600; font-size: 0.9rem; }
+input[type="text"], select, textarea {
+    background: inherit; color: var(--text);
+    border: 1px solid var(--glass); padding: 10px; border-radius: 8px; font-family: inherit;
+}
+select option { background: var(--card-bg); color: var(--text); }
+.segmented-control { display: flex; gap: 5px; overflow-x: auto; padding-bottom: 5px;}
+.seg-option {
+    flex: 1; padding: 8px; text-align: center; border-radius: 6px;
+    background: var(--glass); border: 1px solid transparent; cursor: pointer;
+    font-size: 0.85rem; transition: 0.2s; white-space: nowrap; user-select: none;
+}
+.seg-option.selected { border-width: 2px; }
+
+.char-counter { font-size: 0.8rem; color: #888; text-align: right; margin-top: 5px; }
+
+/* Results & Hotspots */
+.results-container { margin-top: 20px; }
+.plate-card, .report-card {
+    background: var(--card-bg); border: 1px solid var(--glass);
+    border-radius: 12px; padding: 15px; margin-bottom: 15px;
+}
+.plate-text { font-size: 20px; color: var(--accent); letter-spacing: 1px; text-align: center; margin-bottom: 10px; font-weight: bold; }
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.9rem; margin-bottom: 15px; }
+.info-label { color: #888; font-size: 0.8rem; margin-bottom: 2px;}
+
+.report-btn { width: 100%; background: rgba(244, 67, 54, 0.1); color: #F44336; border: 1px solid rgba(244, 67, 54, 0.3); padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold;margin-top: 10px;}
+#detection-image { width: 100%; border-radius: 8px; margin-top: 15px; }
+
+.search-box { display: flex; gap: 10px; margin-bottom: 20px; }
+.search-box input { flex: 1; }
+.search-box button { width: auto; }
+
+.badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; color: #fff;}
+.report-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 0.85rem;}
+.report-time { color: #888; }
+.report-desc { background: var(--glass); padding: 10px; border-radius: 6px; font-size: 0.9rem; margin: 10px 0; }
+.btn-confirm { background: var(--glass); color: var(--text); border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.85rem; width: 100%; margin-top: 5px; }
+.btn-confirm:disabled { opacity: 0.5; cursor: default; }
+
+.spinner { text-align: center; color: #888; margin: 20px 0; }
+.msg-banner { padding: 10px; border-radius: 8px; margin-bottom: 15px; text-align: center; font-size: 0.9rem; }
+.msg-error { background: rgba(244, 67, 54, 0.1); color: #F44336; border: 1px solid rgba(244, 67, 54, 0.3); }
+.msg-success { background: rgba(76, 175, 80, 0.1); color: #4CAF50; border: 1px solid rgba(76, 175, 80, 0.3); }
+
+.hotspots-header { display: flex; justify-content: space-between; align-items: center;}

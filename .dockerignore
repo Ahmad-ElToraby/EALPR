@@ -1,0 +1,32 @@
+# Don't copy these into the Docker container
+.git/
+.idea/
+.venv/
+venv/
+venv310/
+__pycache__/
+*.pyc
+
+# Training/labeling data (not needed for inference)
+Vehicles/
+Vehicles Labeling/
+dataset/
+data/
+test_output/
+
+# Scripts (not needed in production)
+scripts/
+create_icons.py
+start.bat
+
+# Docs
+README.md
+*.md
+
+# Docker/deploy config (not needed inside container)
+Dockerfile
+docker-compose.yml
+railway.toml
+.dockerignore
+.gitignore
+.env
