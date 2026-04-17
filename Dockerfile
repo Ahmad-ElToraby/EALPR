@@ -15,7 +15,10 @@ WORKDIR /app
 # Copy deployment requirements first (Docker layer caching)
 COPY requirements-deploy.txt .
 
-# Install CPU-only PyTorch first (saves ~1.5GB vs GPU version)
+# Pin numpy FIRST to prevent version wars between torch/opencv/paddle
+RUN pip install --no-cache-dir numpy==1.26.4
+
+# Install CPU-only PyTorch (saves ~1.5GB vs GPU version)
 RUN pip install --no-cache-dir \
     torch torchvision --index-url https://download.pytorch.org/whl/cpu
 
@@ -30,6 +33,5 @@ COPY models/ ./models/
 # Railway assigns a dynamic PORT — default to 8000 if not set
 ENV PORT=8000
 
-# No Docker healthcheck — let Railway handle it via railway.toml
 # Start the server using Railway's dynamic PORT
 CMD python -m uvicorn src.main:app --host 0.0.0.0 --port $PORT
