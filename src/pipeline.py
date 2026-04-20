@@ -27,6 +27,28 @@ def get_detector():
             _detector = YOLO(str(mp))
     return _detector
 
+def enhance_plate_crop(img):
+    # Step 1: Upscale if too small
+    h, w = img.shape[:2]
+    if w < 300:
+        scale = 300 / w
+        img = cv2.resize(img, (int(w * scale), int(h * scale)),
+                        interpolation=cv2.INTER_CUBIC)
+    
+    # Step 2: Convert to grayscale
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    
+    # Step 3: CLAHE adaptive contrast enhancement
+    clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
+    enhanced = clahe.apply(gray)
+    
+    # Step 4: Sharpen
+    kernel = np.array([[0,-1,0],[-1,5,-1],[0,-1,0]])
+    sharpened = cv2.filter2D(enhanced, -1, kernel)
+    
+    # Step 5: Convert back to BGR for PaddleOCR
+    return cv2.cvtColor(sharpened, cv2.COLOR_GRAY2BGR)
+
 def process_image(img, conf_th=0.25):
     st = time.time()
     if img is None: return {"error": "Invalid image"}
@@ -49,7 +71,8 @@ def process_image(img, conf_th=0.25):
         
         crop = img[py1:py2, px1:px2]
         if crop.size > 0:
-            feat, ocr = extract_features(crop), extract_text(crop)
+            enhanced_crop = enhance_plate_crop(crop)
+            feat, ocr = extract_features(crop), extract_text(enhanced_crop)
             
             raw_text = ocr.get("full_text", "")
             sanitized = sanitize_plate_text(raw_text, "arabic")

@@ -52,23 +52,22 @@
         <section id="tab-scan" class="tab-content active">
             <div class="camera-container">
                 <div class="camera-viewport">
-                    <video id="camera-video" autoplay playsinline muted></video>
+                    <video id="camera-video" autoplay playsinline muted style="width:100%; height:280px; object-fit:cover; border-radius:12px; display:block;"></video>
                     <canvas id="camera-canvas"></canvas>
-                    <div class="camera-placeholder" id="camera-placeholder">
-                        <p class="text-en" style="color:#888; font-size:14px; text-align:center; padding: 0 20px;">
-                          Tap the 'Start' button to activate camera, then point it at the license plate 
-                          and press 'Capture' when the plate is clearly visible.
-                        </p>
-                        <p class="text-ar" style="color:#888; font-size:14px; text-align:center; padding: 0 20px; display:none;">
-                          اضغط على زر 'تشغيل' لتفعيل الكاميرا، ثم وجّهها نحو لوحة الترخيص 
-                          واضغط 'التقاط' عندما تكون اللوحة واضحة.
-                        </p>
-                    </div>
+                    <div class="camera-placeholder" id="camera-placeholder"></div>
                 </div>
                 <div class="camera-controls">
                     <button id="btn-upload" class="btn-control"><span class="text-en">Upload Image</span><span class="text-ar" style="display:none">رفع صورة</span></button>
                     <button id="btn-camera" class="btn-capture"><span class="text-en">Start</span><span class="text-ar" style="display:none">تشغيل</span></button>
                     <button id="btn-capture-photo" class="btn-control" disabled><span class="text-en">Capture</span><span class="text-ar" style="display:none">التقاط</span></button>
+                </div>
+                <div style="text-align:center; padding:12px 16px; background:#161B22; border-radius:12px; margin-top:12px;">
+                  <p class="text-en" style="color:#888; font-size:13px; margin:0;">
+                    Get as close to the plate as possible. Press 'Capture' when the plate fills the frame.
+                  </p>
+                  <p class="text-ar" style="color:#888; font-size:13px; margin:0; display:none;">
+                    اقترب من اللوحة قدر الإمكان. اضغط 'التقاط' عندما تملأ اللوحة الإطار.
+                  </p>
                 </div>
                 <input type="file" id="file-input" accept="image/*" style="display:none">
             </div>
