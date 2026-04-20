@@ -28,26 +28,61 @@ def get_detector():
     return _detector
 
 def enhance_plate_crop(img):
-    # Step 1: Upscale if too small
+    import cv2
+    import numpy as np
+    
+    # Step 1 — Aggressive upscaling for small crops
     h, w = img.shape[:2]
-    if w < 300:
-        scale = 300 / w
+    target_width = 400
+    if w < target_width:
+        scale = target_width / w
         img = cv2.resize(img, (int(w * scale), int(h * scale)),
                         interpolation=cv2.INTER_CUBIC)
     
-    # Step 2: Convert to grayscale
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    # Step 2 — Denoise first (removes camera noise from fast shots)
+    denoised = cv2.fastNlMeansDenoisingColored(img, None, 10, 10, 7, 21)
     
-    # Step 3: CLAHE adaptive contrast enhancement
-    clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
+    # Step 3 — Grayscale
+    gray = cv2.cvtColor(denoised, cv2.COLOR_BGR2GRAY)
+    
+    # Step 4 — CLAHE adaptive contrast
+    clahe = cv2.createCLAHE(clipLimit=4.0, tileGridSize=(8,8))
     enhanced = clahe.apply(gray)
     
-    # Step 4: Sharpen
+    # Step 5 — Sharpen
     kernel = np.array([[0,-1,0],[-1,5,-1],[0,-1,0]])
     sharpened = cv2.filter2D(enhanced, -1, kernel)
     
-    # Step 5: Convert back to BGR for PaddleOCR
+    # Step 6 — Convert back to BGR
     return cv2.cvtColor(sharpened, cv2.COLOR_GRAY2BGR)
+
+def try_multiple_enhancements(img):
+    import cv2
+    import numpy as np
+    
+    results = []
+    
+    # Version 1 — Standard enhancement
+    results.append(enhance_plate_crop(img))
+    
+    # Version 2 — High contrast binary threshold
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    h, w = gray.shape
+    if w < 400:
+        scale = 400 / w
+        gray = cv2.resize(gray, (int(w*scale), int(h*scale)),
+                         interpolation=cv2.INTER_CUBIC)
+    _, binary = cv2.threshold(gray, 0, 255, 
+                              cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    results.append(cv2.cvtColor(binary, cv2.COLOR_GRAY2BGR))
+    
+    # Version 3 — Adaptive threshold (better for uneven lighting)
+    adaptive = cv2.adaptiveThreshold(gray, 255,
+                cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+                cv2.THRESH_BINARY, 11, 2)
+    results.append(cv2.cvtColor(adaptive, cv2.COLOR_GRAY2BGR))
+    
+    return results
 
 def process_image(img, conf_th=0.25):
     st = time.time()
@@ -71,8 +106,19 @@ def process_image(img, conf_th=0.25):
         
         crop = img[py1:py2, px1:px2]
         if crop.size > 0:
-            enhanced_crop = enhance_plate_crop(crop)
-            feat, ocr = extract_features(crop), extract_text(enhanced_crop)
+            # Try multiple enhancement strategies, use best result
+            enhanced_versions = try_multiple_enhancements(crop)
+            best_text = None
+            best_confidence = 0.0
+            
+            for version in enhanced_versions:
+                result = extract_text(version)
+                if result and result.get("confidence", 0) > best_confidence:
+                    best_confidence = result.get("confidence", 0)
+                    best_text = result
+            
+            ocr = best_text if best_text else {"full_text": "", "confidence": 0.0}
+            feat = extract_features(crop)
             
             raw_text = ocr.get("full_text", "")
             sanitized = sanitize_plate_text(raw_text, "arabic")
