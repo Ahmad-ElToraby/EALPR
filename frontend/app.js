@@ -154,12 +154,41 @@ els.btnCam.onclick = async () => {
         els.btnCam.textContent = 'تشغيل';
         els.btnCap.disabled = true;
     } else {
-        state.stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}).catch(e => null);
+        const constraints = {
+            video: {
+                facingMode: 'environment',
+                width: { ideal: 1920 },
+                height: { ideal: 1080 },
+                zoom: true
+            }
+        };
+        state.stream = await navigator.mediaDevices.getUserMedia(constraints).catch(e => null);
         if(state.stream) {
             els.vid.srcObject = state.stream;
             state.active = true;
             els.btnCam.textContent = 'إيقاف';
             els.btnCap.disabled = false;
+            
+            // Wire zoom slider
+            const track = state.stream.getVideoTracks()[0];
+            const capabilities = track.getCapabilities();
+            const slider = document.getElementById('zoom-slider');
+            const label = document.getElementById('zoom-label');
+            
+            if (capabilities.zoom) {
+                slider.min = capabilities.zoom.min || 1;
+                slider.max = capabilities.zoom.max || 5;
+                slider.step = capabilities.zoom.step || 0.1;
+                slider.value = track.getSettings().zoom || 1;
+                label.textContent = parseFloat(slider.value).toFixed(1) + 'x';
+                
+                slider.oninput = function() {
+                    track.applyConstraints({ advanced: [{ zoom: this.value }] });
+                    label.textContent = parseFloat(this.value).toFixed(1) + 'x';
+                };
+            } else {
+                slider.disabled = true; // Devices that don't support zoom API
+            }
         }
     }
 };
