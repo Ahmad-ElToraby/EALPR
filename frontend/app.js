@@ -356,10 +356,24 @@ async function analyze(b64) {
             els.img.src = `data:image/jpeg;base64,${res.annotated_image}`;
             els.imgCont.style.display = 'block';
         }
+        
+        // Manual fallback logic
+        if (!res.plates || res.plates.length === 0 || res.plates[0].confidence < 0.5) {
+            const fallback = document.getElementById('manual-fallback');
+            if (fallback) fallback.style.display = 'block';
+        } else {
+            const fallback = document.getElementById('manual-fallback');
+            if (fallback) fallback.style.display = 'none';
+        }
+        
     } catch(e) {
         els.noRes.innerHTML = `<p>خطأ في الاتصال بالخادم / Connection error</p>`;
     }
 }
+
+window.switchToReport = function() {
+    switchTab('tab-report');
+};
 
 /* ================================
    TAB 2: REPORT

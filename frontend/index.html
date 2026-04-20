@@ -85,6 +85,22 @@
                 <div class="detection-image-container" id="detection-image-container" style="display:none">
                     <img id="detection-image" alt="Detected plates">
                 </div>
+                <div id="manual-fallback" style="display:none; padding:16px; background:#161B22; border-radius:12px; margin-top:12px;">
+                  <p class="text-en" style="color:#FFC107; font-size:13px; margin:0 0 12px;">
+                    ⚠️ Plate not recognized. You can enter it manually:
+                  </p>
+                  <p class="text-ar" style="color:#FFC107; font-size:13px; margin:0 0 12px; display:none;">
+                    ⚠️ لم يتم التعرف على اللوحة. يمكنك إدخالها يدوياً:
+                  </p>
+                  <button onclick="switchToReport()" style="
+                    width:100%; padding:12px;
+                    background:#2196F3; color:white;
+                    border:none; border-radius:8px;
+                    font-size:15px; cursor:pointer;">
+                    <span class="text-en">Enter Plate Manually → Report</span>
+                    <span class="text-ar" style="display:none">إدخال اللوحة يدوياً ← بلاغ</span>
+                  </button>
+                </div>
             </div>
         </section>
 
