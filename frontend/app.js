@@ -10,6 +10,27 @@ const ARABIC_LETTER_MAP = {
   'هـ':'H','و':'W','ى':'Y','ي':'Y'
 };
 
+const LATIN_TO_ARABIC_DISPLAY = {
+  'A':'أ', 'B':'ب', 'G':'ج', 'D':'د', 'R':'ر',
+  'S':'س', 'C':'ص', 'T':'ط', 'E':'ع', 'F':'ف',
+  'K':'ق', 'L':'ل', 'M':'م', 'N':'ن', 'H':'ه',
+  'W':'و', 'Y':'ى'
+};
+
+const LATIN_TO_ARABIC_DIGIT = {
+  '1':'١', '2':'٢', '3':'٣', '4':'٤', '5':'٥',
+  '6':'٦', '7':'٧', '8':'٨', '9':'٩'
+};
+
+function toArabicDisplay(plateText) {
+    if(!plateText) return '';
+    return plateText.split('').map(ch => {
+        if (LATIN_TO_ARABIC_DIGIT[ch]) return LATIN_TO_ARABIC_DIGIT[ch];
+        if (LATIN_TO_ARABIC_DISPLAY[ch]) return LATIN_TO_ARABIC_DISPLAY[ch];
+        return ch; 
+    }).join('');
+}
+
 window.AppConfig = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -226,15 +247,43 @@ els.btnCap.onclick = () => {
 
 window.currentGovernorate = 'Unknown';
 
+window.setReportPlate = function(plateText) {
+    const parts = plateText.split('-');
+    window.plateLetters = window.plateLetters || [];
+    if(parts.length >= 2) {
+        const d = parts[0].replace(/[^1-9]/g, '').substring(0,4);
+        const chars = parts[1].replace(/[^A-Za-z]/g, '').toUpperCase();
+        
+        window.plateDigits = d;
+        window.plateLetters[0] = chars[0] || '';
+        window.plateLetters[1] = chars[1] || '';
+        window.plateLetters[2] = chars[2] || '';
+        
+        document.getElementById('plate-digits').value = toArabicDisplay(d);
+        document.getElementById('plate-l1').value = toArabicDisplay(window.plateLetters[0]);
+        document.getElementById('plate-l2').value = toArabicDisplay(window.plateLetters[1]);
+        document.getElementById('plate-l3').value = toArabicDisplay(window.plateLetters[2]);
+    } else {
+        window.plateDigits = plateText.replace(/[^1-9]/g, '').substring(0,4);
+        window.plateLetters = ['', '', ''];
+        document.getElementById('plate-digits').value = toArabicDisplay(window.plateDigits);
+        document.getElementById('plate-l1').value = '';
+        document.getElementById('plate-l2').value = '';
+        document.getElementById('plate-l3').value = '';
+    }
+    classifyPlateLocally();
+};
+
 window.getPlateText = function() {
-    const d = document.getElementById('plate-digits').value;
-    let l = document.getElementById('plate-l1').value + document.getElementById('plate-l2').value + document.getElementById('plate-l3').value;
-    return (d && l) ? (d + '-' + l) : (d || l);
+    const digits = window.plateDigits || '';
+    const letters = (window.plateLetters || []).join('');
+    if (!digits) return '';
+    return digits + '-' + letters;
 };
 
 window.classifyPlateLocally = function() {
-    const d = document.getElementById('plate-digits').value;
-    const l = document.getElementById('plate-l1').value + document.getElementById('plate-l2').value + document.getElementById('plate-l3').value;
+    const d = window.plateDigits || '';
+    const l = (window.plateLetters || []).join('');
     let gov = "";
     
     const SUFFIX = {
@@ -265,25 +314,6 @@ window.classifyPlateLocally = function() {
         govDisplay.textContent = "";
         window.currentGovernorate = "Unknown";
     }
-};
-
-window.setReportPlate = function(plateText) {
-    const parts = plateText.split('-');
-    if(parts.length >= 2) {
-        const d = parts[0].replace(/[^1-9]/g, '').substring(0,4);
-        const chars = parts[1].replace(/[^A-Za-z]/g, '').toUpperCase();
-        
-        document.getElementById('plate-digits').value = d;
-        document.getElementById('plate-l1').value = chars[0] || '';
-        document.getElementById('plate-l2').value = chars[1] || '';
-        document.getElementById('plate-l3').value = chars[2] || '';
-    } else {
-        document.getElementById('plate-digits').value = plateText.replace(/[^1-9]/g, '').substring(0,4);
-        document.getElementById('plate-l1').value = '';
-        document.getElementById('plate-l2').value = '';
-        document.getElementById('plate-l3').value = '';
-    }
-    classifyPlateLocally();
 };
 
 window.reportThisPlate = function(plateText) {
@@ -333,7 +363,7 @@ async function analyze(b64) {
                 
                 return `
                 <div class="plate-card">
-                    <div class="plate-text">${text}</div>
+                    <div class="plate-text">${toArabicDisplay(text)}</div>
                     <div class="info-grid">
                         <div><div class="info-label">المحافظة / Gov</div>${p.governorate || p.governorate_ar || 'Unknown'}</div>
                         <div><div class="info-label">النوع / Type</div>${p.vehicle_type || p.vehicle_type_ar || 'Unknown'}</div>
@@ -390,48 +420,67 @@ const pl1 = document.getElementById('plate-l1');
 const pl2 = document.getElementById('plate-l2');
 const pl3 = document.getElementById('plate-l3');
 
+window.plateDigits = '';
+window.plateLetters = ['', '', ''];
+
 pDigits.addEventListener('input', function() {
-    let newVal = '';
+    let latinVal = '';
     for (let char of this.value) {
         if (ARABIC_DIGIT_MAP[char]) {
-            newVal += ARABIC_DIGIT_MAP[char];
-        } else if (/[1-9]/.test(char)) {
-            newVal += char;
+            latinVal += char; // It's already Arabic digit, wait, user type ١ -> char ١, map returns 1
+            // Let's just parse logic: map everything to Latin first
         }
     }
-    this.value = newVal;
-    if (this.value.length === 4) pl1.focus();
+    
+    let parsedLatin = '';
+    for (let char of this.value) {
+        if (ARABIC_DIGIT_MAP[char]) parsedLatin += ARABIC_DIGIT_MAP[char];
+        else if (/[1-9]/.test(char)) parsedLatin += char;
+    }
+    
+    window.plateDigits = parsedLatin;
+    this.value = toArabicDisplay(parsedLatin);
+    if (parsedLatin.length === 4) pl1.focus();
     classifyPlateLocally();
 });
 
-function handleLetterInput(el, nextEl, prevEl) {
+function handleLetterInput(el, nextEl, prevEl, index) {
     el.addEventListener('input', function() {
         let val = this.value;
         if (!val) {
+           window.plateLetters[index] = '';
            classifyPlateLocally();
            return;
         }
         
+        // Take just the last typed character
+        val = val[val.length - 1]; 
+        
         let mapped = ARABIC_LETTER_MAP[val] || val.toUpperCase();
         
         if (!validLetters.includes(mapped)) {
-            this.value = '';
+            this.value = toArabicDisplay(window.plateLetters[index] || '');
         } else {
-            this.value = mapped;
+            window.plateLetters[index] = mapped;
+            this.value = toArabicDisplay(mapped);
             if(nextEl && this.value) nextEl.focus();
         }
         classifyPlateLocally();
     });
     el.addEventListener('keydown', function(e) {
-        if(e.key === 'Backspace' && !this.value && prevEl) {
+        if(e.key === 'Backspace' && !window.plateLetters[index] && prevEl) {
             prevEl.focus();
             e.preventDefault();
+        } else if(e.key === 'Backspace') {
+            window.plateLetters[index] = '';
+            this.value = '';
+            classifyPlateLocally();
         }
     });
 }
-handleLetterInput(pl1, pl2, pDigits);
-handleLetterInput(pl2, pl3, pl1);
-handleLetterInput(pl3, null, pl2);
+handleLetterInput(pl1, pl2, pDigits, 0);
+handleLetterInput(pl2, pl3, pl1, 1);
+handleLetterInput(pl3, null, pl2, 2);
 
 document.getElementById('report-form').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -514,42 +563,56 @@ const lkL1 = document.getElementById('lookup-l1');
 const lkL2 = document.getElementById('lookup-l2');
 const lkL3 = document.getElementById('lookup-l3');
 
+window.lookupPlateDigits = '';
+window.lookupPlateLetters = ['', '', ''];
+
 lkDigits.addEventListener('input', function() {
-    let newVal = '';
+    let parsedLatin = '';
     for (let char of this.value) {
-        if (ARABIC_DIGIT_MAP[char]) newVal += ARABIC_DIGIT_MAP[char];
-        else if (/[1-9]/.test(char)) newVal += char;
+        if (ARABIC_DIGIT_MAP[char]) parsedLatin += ARABIC_DIGIT_MAP[char];
+        else if (/[1-9]/.test(char)) parsedLatin += char;
     }
-    this.value = newVal;
-    if (this.value.length === 4) lkL1.focus();
+    
+    window.lookupPlateDigits = parsedLatin;
+    this.value = toArabicDisplay(parsedLatin);
+    if (parsedLatin.length === 4) lkL1.focus();
 });
 
-function handleLookupLetterInput(el, nextEl, prevEl) {
+function handleLookupLetterInput(el, nextEl, prevEl, index) {
     el.addEventListener('input', function() {
         let val = this.value;
-        if (!val) return;
+        if (!val) {
+           window.lookupPlateLetters[index] = '';
+           return;
+        }
+        val = val[val.length - 1]; 
         let mapped = ARABIC_LETTER_MAP[val] || val.toUpperCase();
+        
         if (!validLetters.includes(mapped)) {
-            this.value = '';
+            this.value = toArabicDisplay(window.lookupPlateLetters[index] || '');
         } else {
-            this.value = mapped;
+            window.lookupPlateLetters[index] = mapped;
+            this.value = toArabicDisplay(mapped);
             if(nextEl && this.value) nextEl.focus();
         }
     });
     el.addEventListener('keydown', function(e) {
-        if(e.key === 'Backspace' && !this.value && prevEl) {
+        if(e.key === 'Backspace' && !window.lookupPlateLetters[index] && prevEl) {
             prevEl.focus();
             e.preventDefault();
+        } else if(e.key === 'Backspace') {
+            window.lookupPlateLetters[index] = '';
+            this.value = '';
         }
     });
 }
-handleLookupLetterInput(lkL1, lkL2, lkDigits);
-handleLookupLetterInput(lkL2, lkL3, lkL1);
-handleLookupLetterInput(lkL3, null, lkL2);
+handleLookupLetterInput(lkL1, lkL2, lkDigits, 0);
+handleLookupLetterInput(lkL2, lkL3, lkL1, 1);
+handleLookupLetterInput(lkL3, null, lkL2, 2);
 
 function getLookupPlateText() {
-    const d = lkDigits.value;
-    const l = lkL1.value + lkL2.value + lkL3.value;
+    const d = window.lookupPlateDigits || '';
+    const l = (window.lookupPlateLetters || []).join('');
     return (d && l) ? (d + '-' + l) : (d || l);
 }
 
@@ -678,7 +741,7 @@ async function loadHotspots() {
                 <div class="report-card" style="display:flex;align-items:center;gap:15px">
                     <div style="font-size:1.5rem;font-weight:bold;color:#888;min-width:30px">#${i+1}</div>
                     <div style="flex:1">
-                        <div class="plate-text" style="text-align:right;margin-bottom:5px;font-size:1.2rem;letter-spacing:normal">${h.plate_text}</div>
+                        <div class="plate-text" style="text-align:right;margin-bottom:5px;font-size:1.2rem;letter-spacing:normal">${toArabicDisplay(h.plate_text)}</div>
                         <div style="font-size:0.85rem;color:#aaa">${h.governorate} • ${h.report_count} reports</div>
                     </div>
                     <div>
@@ -778,7 +841,7 @@ window.generateWarningCard = async function(plateText, governorate, severity, ca
         
         ctx.font = 'bold 72px Cairo, system-ui, sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(plateText, 400, 190);
+        ctx.fillText(toArabicDisplay(plateText), 400, 190);
         
         ctx.font = '24px Cairo, system-ui, sans-serif';
         ctx.fillText(governorate, 400, 260);
